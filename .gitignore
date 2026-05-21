@@ -43,8 +43,6 @@ next-env.d.ts
 /src/generated/prisma
 
 # claude and agents documentation files
-CLAUDE.md
-AGENTS.md
 
 .env
 .env.local
