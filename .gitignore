@@ -45,3 +45,7 @@ next-env.d.ts
 # claude and agents documentation files
 CLAUDE.md
 AGENTS.md
+
+.env
+.env.local
+.env.*.local

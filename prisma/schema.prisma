@@ -4,10 +4,73 @@
 // Get a free hosted Postgres database in seconds: `npx create-db`
 
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
 }
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  image     String?
+  password  String?
+  plan      Plan     @default(FREE)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  credits      Credit?
+  generations  Generation[]
+  subscription Subscription?
+}
+
+model Credit {
+  id      String   @id @default(cuid())
+  userId  String   @unique
+  total   Int      @default(10)
+  used    Int      @default(0)
+  resetAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Generation {
+  id         String         @id @default(cuid())
+  userId     String
+  inputText  String         @db.Text
+  outputText String?        @db.Text
+  mode       GenerationMode
+  language   String         @default("en")
+  shareToken String?        @unique @default(cuid())
+  createdAt  DateTime       @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Subscription {
+  id               String   @id @default(cuid())
+  userId           String   @unique
+  stripeCustomerId String   @unique
+  stripePriceId    String
+  stripeSubId      String   @unique
+  status           String
+  currentPeriodEnd DateTime
+  createdAt        DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum Plan {
+  FREE
+  PRO
+}
+
+enum GenerationMode {
+  MCQ
+  FLASHCARDS
+  SUMMARY
 }
