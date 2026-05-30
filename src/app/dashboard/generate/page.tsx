@@ -3,58 +3,74 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import {
   Select,
-  SelectTrigger,
-  SelectValue,
   SelectContent,
   SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
-import { Sparkles, FileText, CreditCard } from "lucide-react";
+import {
+  Sparkles,
+  BookOpen,
+  Brain,
+  FileText,
+  Globe,
+  ChevronRight,
+  CheckCircle2,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
-
-// Pour Select, il faut l'installer d'abord :
-// npx shadcn@latest add select
 
 type Mode = "MCQ" | "FLASHCARDS" | "SUMMARY";
 
 const modes = [
   {
     value: "MCQ" as Mode,
+    icon: BookOpen,
     label: "MCQ Quiz",
-    description: "10 multiple choice questions with answers",
-    icon: "📝",
-    color: "border-blue-200 bg-blue-50",
-    activeColor: "border-blue-500 bg-blue-50",
-    badgeColor: "bg-blue-100 text-blue-700",
+    description: "10 questions with 4 options each",
+    badge: "Most popular",
+    accentBg: "bg-blue-600",
+    lightBg: "bg-blue-50",
+    lightText: "text-blue-700",
+    lightBorder: "border-blue-200",
+    activeBorder: "border-blue-500",
+    activeBg: "bg-blue-50",
   },
   {
     value: "FLASHCARDS" as Mode,
+    icon: Brain,
     label: "Flashcards",
-    description: "Question & answer pairs to memorize",
-    icon: "🃏",
-    color: "border-green-200 bg-green-50",
-    activeColor: "border-green-500 bg-green-50",
-    badgeColor: "bg-green-100 text-green-700",
+    description: "Q&A pairs for active recall",
+    badge: null,
+    accentBg: "bg-violet-600",
+    lightBg: "bg-violet-50",
+    lightText: "text-violet-700",
+    lightBorder: "border-violet-200",
+    activeBorder: "border-violet-500",
+    activeBg: "bg-violet-50",
   },
   {
     value: "SUMMARY" as Mode,
+    icon: FileText,
     label: "Summary",
-    description: "Key points and structured overview",
-    icon: "📋",
-    color: "border-amber-200 bg-amber-50",
-    activeColor: "border-amber-500 bg-amber-50",
-    badgeColor: "bg-amber-100 text-amber-700",
+    description: "Key points & overview",
+    badge: null,
+    accentBg: "bg-emerald-600",
+    lightBg: "bg-emerald-50",
+    lightText: "text-emerald-700",
+    lightBorder: "border-emerald-200",
+    activeBorder: "border-emerald-500",
+    activeBg: "bg-emerald-50",
   },
+];
+
+const languages = [
+  { value: "en", flag: "🇬🇧", label: "English" },
+  { value: "fr", flag: "🇫🇷", label: "Français" },
+  { value: "ar", flag: "🇹🇳", label: "العربية" },
 ];
 
 export default function GeneratePage() {
@@ -66,142 +82,167 @@ export default function GeneratePage() {
 
   const charCount = inputText.length;
   const isReady = charCount >= 50 && !isLoading;
+  const selectedMode = modes.find((m) => m.value === mode)!;
 
   async function handleGenerate() {
     if (!isReady) return;
     setIsLoading(true);
     setResult(null);
-
-    // Simulation — OpenAI vient en Week 6
     await new Promise((r) => setTimeout(r, 2000));
-    setResult("AI result will appear here in Week 6!");
+    setResult("OpenAI integration comes in Week 6!");
     setIsLoading(false);
   }
 
   return (
-    <div className="max-w-3xl space-y-6 ">
+    <div className="max-w-2xl space-y-6">
       {/* ── HEADER ─────────────────────────────── */}
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">Generate Quiz</h1>
-        <p className="text-slate-500 mt-1">
-          Paste your course content and choose a generation mode
+        <h1 className="text-2xl font-bold text-slate-900">Generate</h1>
+        <p className="text-slate-500 text-sm mt-1">
+          Paste your content and choose a mode
         </p>
       </div>
 
-      {/* ── STEP 1 : Choisir le mode ───────────── */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2">
-            <span className="w-6 h-6 rounded-full bg-blue-600 text-white text-xs flex items-center justify-center font-bold">
-              1
-            </span>
-            Choose a mode
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-3 gap-3">
-            {modes.map((m) => (
+      {/* ── STEP 1 : MODE ──────────────────────── */}
+      <div className="bg-white rounded-2xl border border-slate-200 p-5">
+        <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">
+          1 — Choose mode
+        </p>
+        <div className="grid grid-cols-3 gap-3">
+          {modes.map((m) => {
+            const isActive = mode === m.value;
+            return (
               <button
                 key={m.value}
                 onClick={() => setMode(m.value)}
                 className={cn(
-                  "p-4 rounded-xl border-2 text-left transition-all hover:shadow-sm",
-                  mode === m.value
-                    ? m.activeColor + " border-2"
-                    : "border-slate-200 bg-white hover:border-slate-300",
+                  "relative flex flex-col items-start p-4 rounded-xl border-2 text-left transition-all",
+                  isActive
+                    ? `${m.activeBorder} ${m.activeBg}`
+                    : "border-slate-200 hover:border-slate-300 bg-white",
                 )}
               >
-                <div className="text-2xl mb-2">{m.icon}</div>
+                {/* Badge "Most popular" */}
+                {m.badge && (
+                  <span className="absolute -top-2 left-3 text-xs bg-blue-600 text-white px-2 py-0.5 rounded-full font-medium">
+                    {m.badge}
+                  </span>
+                )}
+
+                {/* Icone */}
+                <div
+                  className={cn(
+                    "w-8 h-8 rounded-lg flex items-center justify-center mb-3",
+                    isActive ? m.accentBg : "bg-slate-100",
+                  )}
+                >
+                  <m.icon
+                    className={cn(
+                      "w-4 h-4",
+                      isActive ? "text-white" : "text-slate-500",
+                    )}
+                  />
+                </div>
+
                 <p
                   className={cn(
-                    "font-semibold text-sm",
-                    mode === m.value ? "text-slate-800" : "text-slate-700",
+                    "font-semibold text-sm mb-0.5",
+                    isActive ? m.lightText : "text-slate-700",
                   )}
                 >
                   {m.label}
                 </p>
-                <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                <p className="text-xs text-slate-400 leading-relaxed">
                   {m.description}
                 </p>
-              </button>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
 
-      {/* ── STEP 2 : Langue ────────────────────── */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2">
-            <span className="w-6 h-6 rounded-full bg-blue-600 text-white text-xs flex items-center justify-center font-bold">
-              2
-            </span>
-            Select language
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
+                {/* Check mark quand actif */}
+                {isActive && (
+                  <CheckCircle2
+                    className={cn(
+                      "w-4 h-4 absolute top-3 right-3",
+                      m.lightText,
+                    )}
+                  />
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ── STEP 2 : LANGUE ────────────────────── */}
+      <div className="bg-white rounded-2xl border border-slate-200 p-5">
+        <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">
+          2 — Language
+        </p>
+        <div className="flex items-center gap-2">
+          <Globe className="w-4 h-4 text-slate-400" />
           <Select value={language} onValueChange={setLanguage}>
-            <SelectTrigger className="w-48">
+            <SelectTrigger className="w-44 h-9 border-slate-300">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="en">🇬🇧 English</SelectItem>
-              <SelectItem value="fr">🇫🇷 Français</SelectItem>
-              <SelectItem value="ar">🇹🇳 العربية</SelectItem>
+              {languages.map((l) => (
+                <SelectItem key={l.value} value={l.value}>
+                  {l.flag} {l.label}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
-      {/* ── STEP 3 : Contenu ───────────────────── */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2">
-            <span className="w-6 h-6 rounded-full bg-blue-600 text-white text-xs flex items-center justify-center font-bold">
-              3
-            </span>
-            Paste your content
-          </CardTitle>
-          <CardDescription>
-            Minimum 50 characters. The more content, the better the results.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <Textarea
-            value={inputText}
-            onChange={(e) => setInputText(e.target.value)}
-            placeholder="Paste your course content, lecture notes, textbook chapter..."
-            className="min-h-40 resize-none text-sm leading-relaxed"
-          />
-          <div className="flex justify-between items-center">
-            <span
-              className={cn(
-                "text-xs",
-                charCount < 50 && charCount > 0
+      {/* ── STEP 3 : CONTENU ───────────────────── */}
+      <div className="bg-white rounded-2xl border border-slate-200 p-5">
+        <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">
+          3 — Your content
+        </p>
+        <Textarea
+          value={inputText}
+          onChange={(e) => setInputText(e.target.value)}
+          placeholder="Paste your course notes, lecture content, textbook chapter... The more content, the better the results."
+          className="min-h-44 resize-none text-sm border-slate-300 focus:border-violet-400 leading-relaxed"
+        />
+        <div className="flex items-center justify-between mt-2.5">
+          <span
+            className={cn(
+              "text-xs",
+              charCount === 0
+                ? "text-slate-400"
+                : charCount < 50
                   ? "text-red-500"
-                  : "text-slate-400",
-              )}
-            >
-              {charCount} characters
-              {charCount < 50 &&
-                charCount > 0 &&
-                ` — ${50 - charCount} more needed`}
-            </span>
-            {charCount >= 50 && (
-              <span className="text-xs text-green-600">
-                ✓ Ready to generate
-              </span>
+                  : "text-emerald-600",
             )}
-          </div>
-        </CardContent>
-      </Card>
+          >
+            {charCount === 0
+              ? "Minimum 50 characters"
+              : charCount < 50
+                ? `${50 - charCount} more characters needed`
+                : `✓ ${charCount} characters — ready!`}
+          </span>
 
-      {/* ── BOUTON GENERATE ────────────────────── */}
+          {charCount > 0 && (
+            <button
+              onClick={() => setInputText("")}
+              className="text-xs text-slate-400 hover:text-slate-600"
+            >
+              Clear
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* ── GENERATE BUTTON ────────────────────── */}
       <Button
         onClick={handleGenerate}
         disabled={!isReady}
-        className="w-full h-12 text-base font-semibold"
-        size="lg"
+        className={cn(
+          "w-full h-12 text-sm font-semibold transition-all",
+          isReady
+            ? "bg-violet-600 hover:bg-violet-700 text-white shadow-lg shadow-violet-200"
+            : "bg-slate-200 text-slate-400 cursor-not-allowed",
+        )}
       >
         {isLoading ? (
           <span className="flex items-center gap-2">
@@ -210,24 +251,32 @@ export default function GeneratePage() {
           </span>
         ) : (
           <span className="flex items-center gap-2">
-            <Sparkles className="w-5 h-5" />
-            Generate {mode}
+            <Sparkles className="w-4 h-4" />
+            Generate {selectedMode.label}
+            <ChevronRight className="w-4 h-4 ml-auto" />
           </span>
         )}
       </Button>
 
-      {/* ── RÉSULTAT ───────────────────────────── */}
+      {/* ── RESULT ─────────────────────────────── */}
       {result && (
-        <Card className="border-green-200 bg-green-50">
-          <CardHeader>
-            <CardTitle className="text-base text-green-800 flex items-center gap-2">
-              <span>✅</span> Generation Complete
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-green-700 text-sm">{result}</p>
-          </CardContent>
-        </Card>
+        <div className="bg-white rounded-2xl border border-emerald-200 overflow-hidden">
+          <div className="flex items-center gap-2 px-5 py-3 bg-emerald-50 border-b border-emerald-200">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+            <span className="text-emerald-800 font-medium text-sm">
+              Generation complete
+            </span>
+            <Badge
+              variant="outline"
+              className="ml-auto text-xs border-emerald-200 text-emerald-600"
+            >
+              {mode}
+            </Badge>
+          </div>
+          <div className="p-5">
+            <p className="text-slate-600 text-sm">{result}</p>
+          </div>
+        </div>
       )}
     </div>
   );

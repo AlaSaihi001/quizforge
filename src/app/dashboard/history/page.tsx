@@ -2,22 +2,50 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Sparkles, Clock, FileText, Trash2 } from "lucide-react";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  Sparkles,
+  Clock,
+  FileText,
+  Brain,
+  BookOpen,
+  ArrowRight,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
 
-const modeColors: Record<string, string> = {
-  MCQ: "bg-blue-100 text-blue-700 border-blue-200",
-  FLASHCARDS: "bg-green-100 text-green-700 border-green-200",
-  SUMMARY: "bg-amber-100 text-amber-700 border-amber-200",
-};
-
-const modeIcons: Record<string, string> = {
-  MCQ: "📝",
-  FLASHCARDS: "🃏",
-  SUMMARY: "📋",
+const modeConfig: Record<
+  string,
+  {
+    icon: React.ElementType;
+    bg: string;
+    text: string;
+    border: string;
+    label: string;
+  }
+> = {
+  MCQ: {
+    icon: BookOpen,
+    bg: "bg-blue-50",
+    text: "text-blue-700",
+    border: "border-blue-200",
+    label: "MCQ",
+  },
+  FLASHCARDS: {
+    icon: Brain,
+    bg: "bg-violet-50",
+    text: "text-violet-700",
+    border: "border-violet-200",
+    label: "Flashcards",
+  },
+  SUMMARY: {
+    icon: FileText,
+    bg: "bg-emerald-50",
+    text: "text-emerald-700",
+    border: "border-emerald-200",
+    label: "Summary",
+  },
 };
 
 export default async function HistoryPage() {
@@ -33,123 +61,146 @@ export default async function HistoryPage() {
   const generations = await prisma.generation.findMany({
     where: { userId: user.id },
     orderBy: { createdAt: "desc" },
-    // PRO users voient tout, FREE voient les 20 derniers
     take: user.plan === "PRO" ? undefined : 20,
   });
 
+  const counts = {
+    all: generations.length,
+    MCQ: generations.filter((g) => g.mode === "MCQ").length,
+    FLASHCARDS: generations.filter((g) => g.mode === "FLASHCARDS").length,
+    SUMMARY: generations.filter((g) => g.mode === "SUMMARY").length,
+  };
+
   return (
-    <div className="space-y-6">
+    <div className="max-w-3xl space-y-6">
       {/* ── HEADER ─────────────────────────────── */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-start justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">History</h1>
-          <p className="text-slate-500 mt-1">
-            {generations.length} generation{generations.length !== 1 ? "s" : ""}
-            {user.plan === "FREE" && " — last 20 (upgrade for full history)"}
+          <p className="text-slate-500 text-sm mt-1">
+            {counts.all} generation{counts.all !== 1 ? "s" : ""}
+            {user.plan === "FREE" && counts.all === 20 && (
+              <span className="text-amber-600">
+                {" "}
+                · showing last 20 — upgrade for full history
+              </span>
+            )}
           </p>
         </div>
         <Link href="/dashboard/generate">
-          <Button>
-            <Sparkles className="w-4 h-4 mr-2" />
-            New Generation
+          <Button
+            size="sm"
+            className="bg-violet-600 hover:bg-violet-700 text-white"
+          >
+            <Sparkles className="w-3.5 h-3.5 mr-2" />
+            New
           </Button>
         </Link>
       </div>
 
-      {/* ── FILTRES par mode ───────────────────── */}
-      {/* Juste visuels pour l'instant — la logique filtre viendra après */}
-      <div className="flex gap-2">
-        <Badge
-          variant="outline"
-          className="cursor-pointer bg-white hover:bg-slate-50 px-3 py-1"
-        >
-          All ({generations.length})
-        </Badge>
-        <Badge
-          variant="outline"
-          className="cursor-pointer bg-white hover:bg-slate-50 px-3 py-1 text-blue-600 border-blue-200"
-        >
-          MCQ ({generations.filter((g) => g.mode === "MCQ").length})
-        </Badge>
-        <Badge
-          variant="outline"
-          className="cursor-pointer bg-white hover:bg-slate-50 px-3 py-1 text-green-600 border-green-200"
-        >
-          Flashcards (
-          {generations.filter((g) => g.mode === "FLASHCARDS").length})
-        </Badge>
-        <Badge
-          variant="outline"
-          className="cursor-pointer bg-white hover:bg-slate-50 px-3 py-1 text-amber-600 border-amber-200"
-        >
-          Summary ({generations.filter((g) => g.mode === "SUMMARY").length})
-        </Badge>
+      {/* ── FILTER CHIPS ───────────────────────── */}
+      <div className="flex gap-2 flex-wrap">
+        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-900 text-white rounded-full text-xs font-medium cursor-pointer">
+          All
+          <span className="bg-white/20 px-1.5 py-0.5 rounded-full text-xs">
+            {counts.all}
+          </span>
+        </div>
+        {(["MCQ", "FLASHCARDS", "SUMMARY"] as const).map((mode) => {
+          const cfg = modeConfig[mode];
+          return (
+            <div
+              key={mode}
+              className={cn(
+                "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium cursor-pointer border transition-colors hover:brightness-95",
+                cfg.bg,
+                cfg.text,
+                cfg.border,
+              )}
+            >
+              {cfg.label}
+              <span
+                className={cn("px-1.5 py-0.5 rounded-full text-xs bg-white/60")}
+              >
+                {counts[mode]}
+              </span>
+            </div>
+          );
+        })}
       </div>
 
-      {/* ── LISTE ──────────────────────────────── */}
+      {/* ── CONTENT ────────────────────────────── */}
       {generations.length === 0 ? (
-        <Card className="border-dashed">
-          <CardContent className="flex flex-col items-center justify-center py-16">
-            <FileText className="w-12 h-12 text-slate-300 mb-3" />
-            <p className="text-slate-500 font-medium text-lg">
-              No generations yet
-            </p>
-            <p className="text-slate-400 text-sm mt-1">
-              Your history will appear here
-            </p>
-            <Link href="/dashboard/generate" className="mt-4">
-              <Button>Create your first quiz</Button>
-            </Link>
-          </CardContent>
-        </Card>
+        <div className="bg-white rounded-2xl border border-dashed border-slate-300 flex flex-col items-center justify-center py-16">
+          <div className="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center mb-4">
+            <FileText className="w-7 h-7 text-slate-300" />
+          </div>
+          <p className="text-slate-600 font-medium text-lg">
+            No generations yet
+          </p>
+          <p className="text-slate-400 text-sm mt-1 mb-6">
+            Your history will appear here once you start
+          </p>
+          <Link href="/dashboard/generate">
+            <Button className="bg-violet-600 hover:bg-violet-700 text-white">
+              Create your first quiz
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+          </Link>
+        </div>
       ) : (
-        <div className="space-y-3">
-          {generations.map((gen) => (
-            <Card
-              key={gen.id}
-              className="hover:shadow-md transition-all border-slate-200 group"
-            >
-              <CardContent className="p-5">
-                <div className="flex items-start justify-between gap-4">
-                  {/* Icone + contenu */}
-                  <div className="flex items-start gap-4 flex-1 min-w-0">
-                    <div className="text-2xl shrink-0 mt-0.5">
-                      {modeIcons[gen.mode]}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Badge
-                          variant="outline"
-                          className={modeColors[gen.mode]}
-                        >
-                          {gen.mode}
-                        </Badge>
-                        <span className="text-slate-400 text-xs flex items-center gap-1">
-                          <Clock className="w-3 h-3" />
-                          {new Date(gen.createdAt).toLocaleDateString("fr-FR", {
-                            day: "numeric",
-                            month: "long",
-                            year: "numeric",
-                          })}
-                        </span>
-                      </div>
-                      <p className="text-sm text-slate-600 line-clamp-2">
-                        {gen.inputText.substring(0, 150)}
-                        {gen.inputText.length > 150 ? "..." : ""}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Actions — visibles au hover */}
-                  <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-                    <Button variant="outline" size="sm" className="text-xs">
-                      View
-                    </Button>
-                  </div>
+        <div className="bg-white rounded-2xl border border-slate-200 divide-y divide-slate-100 overflow-hidden">
+          {generations.map((gen) => {
+            const cfg = modeConfig[gen.mode];
+            return (
+              <div
+                key={gen.id}
+                className="flex items-start gap-4 px-5 py-4 hover:bg-slate-50/80 transition-colors group cursor-pointer"
+              >
+                {/* Mode icon */}
+                <div
+                  className={cn(
+                    "w-9 h-9 rounded-xl flex items-center justify-center shrink-0 mt-0.5",
+                    cfg.bg,
+                  )}
+                >
+                  <cfg.icon className={cn("w-4 h-4", cfg.text)} />
                 </div>
-              </CardContent>
-            </Card>
-          ))}
+
+                {/* Content */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Badge
+                      variant="outline"
+                      className={cn(
+                        "text-xs h-5 px-2 font-medium",
+                        cfg.bg,
+                        cfg.text,
+                        cfg.border,
+                      )}
+                    >
+                      {cfg.label}
+                    </Badge>
+                    <span className="text-slate-400 text-xs flex items-center gap-1">
+                      <Clock className="w-3 h-3" />
+                      {new Date(gen.createdAt).toLocaleDateString("fr-FR", {
+                        day: "numeric",
+                        month: "short",
+                        year: "numeric",
+                      })}
+                    </span>
+                  </div>
+                  <p className="text-sm text-slate-600 line-clamp-2 leading-relaxed">
+                    {gen.inputText.substring(0, 160)}
+                    {gen.inputText.length > 160 ? "..." : ""}
+                  </p>
+                </div>
+
+                {/* Arrow on hover */}
+                <ArrowRight className="w-4 h-4 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity mt-1 shrink-0" />
+              </div>
+            );
+          })}
         </div>
       )}
     </div>

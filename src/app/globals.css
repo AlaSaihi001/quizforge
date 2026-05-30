@@ -81,6 +81,18 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+
+  --navy-950: #05080f;
+  --navy-900: #080d1a;
+  --navy-800: #0d1526;
+  --navy-700: #111d35;
+  --border: rgba(255,255,255,0.07);
+  --border-light: rgba(255,255,255,0.12);
+  --blue-glow: rgba(59,130,246,0.15);
+  --text-primary: #f0f4ff;
+  --text-secondary: #8b9cb8;
+  --text-muted: #4a5a75;
+
 }
 
 .dark {

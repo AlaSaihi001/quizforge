@@ -9,11 +9,9 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // Récupère la session côté serveur
   const session = await getServerSession(authOptions);
   if (!session?.user?.email) redirect("/login");
 
-  // Récupère les données complètes de l'utilisateur
   const user = await prisma.user.findUnique({
     where: { email: session.user.email },
     include: { credits: true },
@@ -23,7 +21,6 @@ export default async function DashboardLayout({
 
   return (
     <div className="flex h-screen overflow-hidden bg-slate-50">
-      {/* Sidebar — reçoit les données du serveur */}
       <Sidebar
         userName={user.name || "User"}
         userEmail={user.email || ""}
@@ -32,19 +29,33 @@ export default async function DashboardLayout({
         creditsTotal={user.credits?.total || 10}
       />
 
-      {/* Contenu principal — scrollable */}
-      <main className="flex-1 overflow-y-auto bg-gray-500">
-        {/* Header en haut de chaque page */}
-        <div className="border-b border-slate-200  px-8 py-4 sticky top-0 z-10">
-          <p className="text-sm text-white">
-            Welcome back,{" "}
+      {/* MAIN */}
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+        {/* Topbar */}
+        <header className="h-16 bg-white border-b border-slate-200 flex items-center px-8 shrink-0">
+          <div className="flex items-center gap-2 text-sm text-slate-500">
             <span className="font-medium text-slate-800">{user.name}</span>
-          </p>
-        </div>
+            <span className="text-slate-300">·</span>
+            <span
+              className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                user.plan === "PRO"
+                  ? "bg-amber-100 text-amber-700"
+                  : "bg-slate-100 text-slate-600"
+              }`}
+            >
+              {user.plan}
+            </span>
+          </div>
 
-        {/* Contenu de la page active */}
-        <div className="p-8">{children}</div>
-      </main>
+          <div className="ml-auto flex items-center gap-2 text-xs text-slate-400">
+            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            Connected
+          </div>
+        </header>
+
+        {/* Page content */}
+        <main className="flex-1 overflow-y-auto p-8">{children}</main>
+      </div>
     </div>
   );
 }

@@ -1,46 +1,48 @@
-// Ce fichier est automatiquement utilisé par Next.js
-// pendant que dashboard/page.tsx charge ses données
-
 import { Skeleton } from "@/components/ui/skeleton";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 export default function DashboardLoading() {
   return (
-    <div className="space-y-8">
-      {/* Titre skeleton */}
+    <div className="space-y-8 animate-pulse">
+      {/* Header */}
       <div className="space-y-2">
-        <Skeleton className="h-8 w-48" />
-        <Skeleton className="h-4 w-72" />
+        <Skeleton className="h-8 w-44 bg-slate-200" />
+        <Skeleton className="h-4 w-64 bg-slate-200" />
       </div>
 
-      {/* Stats cards skeleton */}
-      <div className="grid grid-cols-3 gap-4">
+      {/* Stats grid */}
+      <div className="grid grid-cols-3 gap-5">
         {[1, 2, 3].map((i) => (
-          <Card key={i}>
-            <CardHeader className="pb-2">
-              <Skeleton className="h-4 w-32" />
-            </CardHeader>
-            <CardContent>
-              <Skeleton className="h-8 w-16 mb-2" />
-              <Skeleton className="h-3 w-24" />
-            </CardContent>
-          </Card>
+          <div
+            key={i}
+            className="bg-white rounded-2xl border border-slate-200 p-5 space-y-3"
+          >
+            <div className="flex justify-between items-start">
+              <Skeleton className="h-4 w-28 bg-slate-200" />
+              <Skeleton className="h-9 w-9 rounded-xl bg-slate-200" />
+            </div>
+            <Skeleton className="h-9 w-16 bg-slate-200" />
+            <Skeleton className="h-3 w-20 bg-slate-200" />
+          </div>
         ))}
       </div>
 
-      {/* Generations skeleton */}
-      <div className="space-y-3">
-        <Skeleton className="h-6 w-40" />
+      {/* Recent section */}
+      <div className="space-y-4">
+        <div className="flex justify-between">
+          <Skeleton className="h-6 w-40 bg-slate-200" />
+          <Skeleton className="h-6 w-20 bg-slate-200" />
+        </div>
         {[1, 2, 3].map((i) => (
-          <Card key={i}>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <Skeleton className="h-6 w-20 rounded-full" />
-                <Skeleton className="h-4 flex-1" />
-                <Skeleton className="h-3 w-24" />
-              </div>
-            </CardContent>
-          </Card>
+          <div
+            key={i}
+            className="bg-white rounded-xl border border-slate-200 p-4"
+          >
+            <div className="flex items-center gap-3">
+              <Skeleton className="h-6 w-20 rounded-full bg-slate-200" />
+              <Skeleton className="h-4 flex-1 bg-slate-200" />
+              <Skeleton className="h-3 w-20 bg-slate-200" />
+            </div>
+          </div>
         ))}
       </div>
     </div>
