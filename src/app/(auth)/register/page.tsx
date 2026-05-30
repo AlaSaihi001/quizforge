@@ -4,6 +4,19 @@ import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { registerUser } from "@/lib/actions/auth.action";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent } from "@/components/ui/card";
+import { Zap, Check } from "lucide-react";
+import Link from "next/link";
+
+// Ce que l'utilisateur gagne avec le compte gratuit
+const freeFeatures = [
+  "10 free generations per day",
+  "MCQ, Flashcards & Summary",
+  "English, French & Arabic",
+];
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -36,97 +49,111 @@ export default function RegisterPage() {
     }
 
     router.push("/dashboard");
+    router.refresh();
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-      <div className="bg-white rounded-2xl shadow-md p-8 w-full max-w-md">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">⚡ QuizForge</h1>
-          <p className="text-gray-500 mt-2">Create your account</p>
-          <p className="text-sm text-green-600 font-medium mt-1">
-            🎁 Start with 10 free generations
-          </p>
+    <div className="min-h-screen bg-gray-500 flex items-center justify-center p-4">
+      <div className="w-full max-w-md space-y-6">
+        {/* Logo */}
+        <div className="text-center">
+          <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center mx-auto mb-4">
+            <Zap className="w-6 h-6 text-white" />
+          </div>
+          <h1 className="text-2xl font-bold text-slate-900">
+            Create your account
+          </h1>
+          <p className="text-slate-500 mt-1">Start with 10 free generations</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          {/* Name */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Full Name
-            </label>
-            <input
-              type="text"
-              value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
-              placeholder="Your name"
-              required
-              className="w-full px-4 py-2.5 border text-gray-800 border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          {/* Email */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Email
-            </label>
-            <input
-              type="email"
-              value={form.email}
-              onChange={(e) => setForm({ ...form, email: e.target.value })}
-              placeholder="you@example.com"
-              required
-              className="w-full px-4 py-2.5 border text-gray-800 border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          {/* Password */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Password
-            </label>
-            <input
-              type="password"
-              value={form.password}
-              onChange={(e) => setForm({ ...form, password: e.target.value })}
-              placeholder="Minimum 6 characters"
-              required
-              className="w-full px-4 py-2.5 border text-gray-800 border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          {/* Error */}
-          {error && (
-            <div className="px-4 py-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
-              ⚠️ {error}
-            </div>
-          )}
-
-          {/* Submit */}
-          <button
-            type="submit"
-            disabled={isLoading}
-            className={`w-full py-3 rounded-lg font-semibold text-white transition-colors mt-2 ${
-              isLoading
-                ? "bg-blue-300 cursor-not-allowed"
-                : "bg-blue-600 hover:bg-blue-700"
-            }`}
-          >
-            {isLoading ? "Creating account..." : "Create Account"}
-          </button>
-
-          {/* Login link */}
-          <p className="text-center text-sm text-gray-500">
-            Already have an account?{" "}
-            <a
-              href="/login"
-              className="text-blue-600 hover:underline font-medium"
+        {/* Features gratuites */}
+        <div className="flex flex-col gap-2">
+          {freeFeatures.map((f) => (
+            <div
+              key={f}
+              className="flex items-center gap-2 text-sm text-slate-600"
             >
-              Sign in
-            </a>
-          </p>
-        </form>
+              <div className="w-4 h-4 rounded-full bg-green-100 flex items-center justify-center shrink-0">
+                <Check className="w-2.5 h-2.5 text-green-600" />
+              </div>
+              {f}
+            </div>
+          ))}
+        </div>
+
+        <Card>
+          <CardContent className="pt-6">
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Full Name</Label>
+                <Input
+                  id="name"
+                  type="text"
+                  placeholder="Your name"
+                  value={form.name}
+                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                  required
+                  disabled={isLoading}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="you@example.com"
+                  value={form.email}
+                  onChange={(e) => setForm({ ...form, email: e.target.value })}
+                  required
+                  disabled={isLoading}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="Minimum 6 characters"
+                  value={form.password}
+                  onChange={(e) =>
+                    setForm({ ...form, password: e.target.value })
+                  }
+                  required
+                  disabled={isLoading}
+                />
+              </div>
+
+              {error && (
+                <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-red-600 text-sm">
+                  {error}
+                </div>
+              )}
+
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? (
+                  <span className="flex items-center gap-2">
+                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Creating account...
+                  </span>
+                ) : (
+                  "Create Free Account"
+                )}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+
+        <p className="text-center text-sm text-white">
+          Already have an account?{" "}
+          <Link
+            href="/login"
+            className="text-blue-600 hover:underline font-medium"
+          >
+            Sign in
+          </Link>
+        </p>
       </div>
     </div>
   );
