@@ -40,53 +40,38 @@ const modes = [
     value: "MCQ" as Mode,
     icon: BookOpen,
     label: "MCQ Quiz",
-    description: "10 questions with 4 options each",
-    badge: "Most popular",
+    description: "10 questions + answers",
     accentBg: "bg-blue-600",
     lightBg: "bg-blue-50",
     lightText: "text-blue-700",
-    lightBorder: "border-blue-200",
     activeBorder: "border-blue-500",
-    activeBg: "bg-blue-50",
   },
   {
     value: "FLASHCARDS" as Mode,
     icon: Brain,
     label: "Flashcards",
-    description: "Q&A pairs for active recall",
-    badge: null,
+    description: "Q&A pairs for recall",
     accentBg: "bg-violet-600",
     lightBg: "bg-violet-50",
     lightText: "text-violet-700",
-    lightBorder: "border-violet-200",
     activeBorder: "border-violet-500",
-    activeBg: "bg-violet-50",
   },
   {
     value: "SUMMARY" as Mode,
     icon: FileText,
     label: "Summary",
-    description: "Key points & overview",
-    badge: null,
+    description: "Structured key points",
     accentBg: "bg-emerald-600",
     lightBg: "bg-emerald-50",
     lightText: "text-emerald-700",
-    lightBorder: "border-emerald-200",
     activeBorder: "border-emerald-500",
-    activeBg: "bg-emerald-50",
   },
 ];
 
-const languages = [
-  { value: "en", flag: "🇬🇧", label: "English" },
-  { value: "fr", flag: "🇫🇷", label: "Français" },
-  { value: "ar", flag: "🇹🇳", label: "العربية" },
-];
-
 const errorMessages: Record<string, string> = {
-  UNAUTHORIZED: "You must be logged in to generate content.",
-  NO_CREDITS: "No credits left today. They reset at midnight.",
-  TEXT_TOO_SHORT: "Please enter at least 50 characters.",
+  UNAUTHORIZED: "You must be logged in.",
+  NO_CREDITS: "No credits left today. Resets at midnight.",
+  TEXT_TOO_SHORT: "Enter at least 50 characters.",
   INVALID_MODE: "Invalid mode selected.",
   default: "Something went wrong. Please try again.",
 };
@@ -95,11 +80,9 @@ export default function GeneratePage() {
   const [inputText, setInputText] = useState("");
   const [mode, setMode] = useState<Mode>("MCQ");
   const [language, setLanguage] = useState("en");
-
   const [isLoading, setIsLoading] = useState(false);
   const [streamedText, setStreamedText] = useState("");
   const [error, setError] = useState<string | null>(null);
-
   const [result, setResult] = useState<
     MCQResult | FlashcardsResult | SummaryResult | null
   >(null);
@@ -125,6 +108,7 @@ export default function GeneratePage() {
         body: JSON.stringify({ inputText, mode, language }),
       });
 
+      // Erreur HTTP (pas un stream)
       if (!response.ok) {
         const data = await response.json();
         setError(errorMessages[data.error] ?? errorMessages.default);
@@ -132,7 +116,7 @@ export default function GeneratePage() {
         return;
       }
 
-      // ── Lecture du stream ───────────────────────────────────────────────────
+      // ── LECTURE DU STREAM ─────────────────────────────────────────────────
       const reader = response.body?.getReader();
       const decoder = new TextDecoder();
 
@@ -160,7 +144,7 @@ export default function GeneratePage() {
         setStreamedText(fullText);
       }
 
-      // ── Parse le résultat ───────────────────────────────────────────────────
+      // ── PARSE LE RÉSULTAT ─────────────────────────────────────────────────
       const parsed = parseGenerationResult(fullText, mode);
 
       if (parsed) {
@@ -168,7 +152,8 @@ export default function GeneratePage() {
         setResultMode(mode);
         setStreamedText("");
       } else {
-        setError("Could not format the AI response. Raw output shown below.");
+        // JSON invalide — affiche le texte brut
+        setError("Could not parse the AI response. Raw output shown below.");
       }
     } catch (err) {
       console.error(err);
@@ -183,20 +168,19 @@ export default function GeneratePage() {
     setResultMode(null);
     setStreamedText("");
     setError(null);
-    setInputText("");
   }
 
   return (
-    <div className="max-w-2xl space-y-6">
-      {/* ── HEADER ─────────────────────────────── */}
+    <div className="max-w-2xl space-y-5">
+      {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-slate-900">Generate</h1>
         <p className="text-slate-500 text-sm mt-1">
-          Paste your content and choose a mode
+          Powered by Groq · Llama 3.3 70B
         </p>
       </div>
 
-      {/* ── FORM — caché si résultat ────────────── */}
+      {/* Form — caché si résultat */}
       {!result && (
         <>
           {/* STEP 1 — MODE */}
@@ -214,15 +198,10 @@ export default function GeneratePage() {
                     className={cn(
                       "relative flex flex-col items-start p-4 rounded-xl border-2 text-left transition-all",
                       isActive
-                        ? `${m.activeBorder} ${m.activeBg}`
-                        : "border-slate-200 hover:border-slate-300 bg-white",
+                        ? `${m.activeBorder} ${m.lightBg}`
+                        : "border-slate-200 bg-white hover:border-slate-300",
                     )}
                   >
-                    {m.badge && (
-                      <span className="absolute -top-2 left-3 text-xs bg-blue-600 text-white px-2 py-0.5 rounded-full font-medium">
-                        {m.badge}
-                      </span>
-                    )}
                     <div
                       className={cn(
                         "w-8 h-8 rounded-lg flex items-center justify-center mb-3",
@@ -273,11 +252,9 @@ export default function GeneratePage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {languages.map((l) => (
-                    <SelectItem key={l.value} value={l.value}>
-                      {l.flag} {l.label}
-                    </SelectItem>
-                  ))}
+                  <SelectItem value="en">🇬🇧 English</SelectItem>
+                  <SelectItem value="fr">🇫🇷 Français</SelectItem>
+                  <SelectItem value="ar">🇹🇳 العربية</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -291,7 +268,7 @@ export default function GeneratePage() {
             <Textarea
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
-              placeholder="Paste your course notes, lecture content, textbook chapter... The more content, the better the results."
+              placeholder="Paste your course notes, lecture content, textbook chapter..."
               className="min-h-44 resize-none text-sm border-slate-300 focus:border-violet-400 leading-relaxed"
               disabled={isLoading}
             />
@@ -309,8 +286,8 @@ export default function GeneratePage() {
                 {charCount === 0
                   ? "Minimum 50 characters"
                   : charCount < 50
-                    ? `${50 - charCount} more characters needed`
-                    : `✓ ${charCount} characters — ready!`}
+                    ? `${50 - charCount} more needed`
+                    : `✓ ${charCount} characters`}
               </span>
               {charCount > 0 && !isLoading && (
                 <button
@@ -350,7 +327,7 @@ export default function GeneratePage() {
         </>
       )}
 
-      {/* ── STREAMING EN COURS ─────────────────── */}
+      {/* STREAMING EN COURS */}
       {isLoading && streamedText && (
         <div className="bg-white rounded-2xl border border-slate-200 p-5">
           <div className="flex items-center gap-2 mb-3">
@@ -365,7 +342,7 @@ export default function GeneratePage() {
         </div>
       )}
 
-      {/* ── ERREUR ─────────────────────────────── */}
+      {/* ERREUR */}
       {error && (
         <div className="bg-red-50 rounded-2xl border border-red-200 p-5">
           <div className="flex items-start gap-3">
@@ -376,24 +353,16 @@ export default function GeneratePage() {
               </p>
               <p className="text-sm text-red-600">{error}</p>
               {streamedText && (
-                <pre className="mt-3 text-xs text-red-700 whitespace-pre-wrap font-mono max-h-32 overflow-y-auto bg-red-100 p-3 rounded-lg">
+                <pre className="mt-3 text-xs text-red-700 whitespace-pre-wrap font-mono leading-relaxed max-h-32 overflow-y-auto bg-red-100 p-3 rounded-lg">
                   {streamedText}
                 </pre>
               )}
             </div>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={reset}
-            className="mt-4 text-xs"
-          >
-            Try again
-          </Button>
         </div>
       )}
 
-      {/* ── RÉSULTAT FINAL ─────────────────────── */}
+      {/* RÉSULTAT */}
       {result && resultMode && (
         <div className="space-y-4">
           {/* Header résultat */}
@@ -421,7 +390,6 @@ export default function GeneratePage() {
             </Button>
           </div>
 
-          {/* Composant résultat selon le mode */}
           {resultMode === "MCQ" && (
             <MCQResultDisplay data={result as MCQResult} />
           )}
