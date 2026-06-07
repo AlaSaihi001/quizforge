@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Crown, Sparkles, Zap, RefreshCcw } from "lucide-react";
+import { UpgradeButton } from "./upgrade-button";
 
 interface NoCreditsModalProps {
   isOpen: boolean;
@@ -92,18 +93,7 @@ export function NoCreditsModal({
 
         {/* Boutons */}
         <div className="flex flex-col gap-2 pt-2">
-          <Button
-            className="w-full bg-violet-600 hover:bg-violet-700 text-white h-11"
-            onClick={() => {
-              // Stripe Checkout viendra en Week 8
-              // Pour l'instant, on ferme juste le modal
-              onClose();
-              alert("Stripe coming in Week 8!");
-            }}
-          >
-            <Crown className="w-4 h-4 mr-2" />
-            Upgrade to PRO — $9/month
-          </Button>
+          <UpgradeButton className="w-full h-11" />
 
           <Button
             variant="ghost"

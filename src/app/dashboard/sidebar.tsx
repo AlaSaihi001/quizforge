@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { UpgradeButton } from "@/components/dashboard/upgrade-button";
 import { cn } from "@/lib/utils";
 
 const navLinks = [
@@ -158,17 +159,7 @@ export function Sidebar({
 
       {/* ── UPGRADE + LOGOUT ───────────────────── */}
       <div className="p-3 border-t border-slate-800/60 space-y-2">
-        {!isPro && (
-          <button className="w-full flex items-center justify-between px-3 py-2.5 bg-violet-600/10 hover:bg-violet-600/20 border border-violet-500/20 text-violet-400 hover:text-violet-300 rounded-xl text-sm font-medium transition-colors">
-            <span className="flex items-center gap-2">
-              <Crown className="w-4 h-4" />
-              Upgrade to PRO
-            </span>
-            <span className="text-xs bg-violet-600/20 px-2 py-0.5 rounded-full">
-              $9/mo
-            </span>
-          </button>
-        )}
+        {!isPro && <UpgradeButton size="sm" className="w-full text-xs" />}
 
         <Button
           variant="ghost"

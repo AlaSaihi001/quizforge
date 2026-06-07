@@ -5,6 +5,9 @@ import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { UpgradeBanner } from "@/components/dashboard/upgrade-banner";
+import { ManageSubscriptionButton } from "@/components/dashboard/manage-subscription-button";
+
 import {
   Sparkles,
   TrendingUp,
@@ -276,24 +279,24 @@ export default async function DashboardPage() {
         )}
       </div>
 
-      {/* ── UPGRADE BANNER (FREE only) ─────────── */}
-      {!isPro && (
-        <div className="bg-slate-950 rounded-2xl p-6 flex items-center justify-between">
+      {/* ── UPGRADE ou MANAGE ──────────────────────────────────── */}
+      {user.plan === "FREE" ? (
+        <UpgradeBanner />
+      ) : (
+        // User PRO → bouton gérer l'abonnement
+        <div className="bg-white rounded-2xl border border-slate-200 p-5 flex items-center justify-between">
           <div>
-            <div className="flex items-center gap-2 mb-2">
-              <Crown className="w-4 h-4 text-amber-400" />
-              <span className="text-white font-semibold text-sm">
-                Upgrade to PRO
+            <div className="flex items-center gap-2 mb-1">
+              <Crown className="w-4 h-4 text-amber-500" />
+              <span className="font-semibold text-slate-900 text-sm">
+                PRO Plan Active
               </span>
             </div>
-            <p className="text-slate-400 text-sm">
-              Unlimited generations, PDF export, shareable links
+            <p className="text-slate-500 text-sm">
+              Unlimited generations · Renews monthly
             </p>
           </div>
-          <Button className="bg-violet-600 hover:bg-violet-700 text-white shrink-0">
-            Upgrade — $9/mo
-            <ArrowRight className="w-4 h-4 ml-2" />
-          </Button>
+          <ManageSubscriptionButton />
         </div>
       )}
     </div>
