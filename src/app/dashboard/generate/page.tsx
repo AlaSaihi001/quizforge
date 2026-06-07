@@ -33,6 +33,10 @@ import { MCQResultDisplay } from "@/components/dashboard/results/mcq-result";
 import { FlashcardsResultDisplay } from "@/components/dashboard/results/flashcards-result";
 import { SummaryResultDisplay } from "@/components/dashboard/results/summary-result";
 
+// ── CHANGEMENT 1 : nouveaux imports ──────────────────────────────────────────
+import { NoCreditsModal } from "@/components/dashboard/no-credits-modal";
+import { RateLimitBanner } from "@/components/dashboard/rate-limit-toast";
+
 type Mode = "MCQ" | "FLASHCARDS" | "SUMMARY";
 
 const modes = [
@@ -83,27 +87,23 @@ const languages = [
   { value: "ar", flag: "🇹🇳", label: "العربية" },
 ];
 
-const errorMessages: Record<string, string> = {
-  UNAUTHORIZED: "You must be logged in to generate content.",
-  NO_CREDITS: "No credits left today. They reset at midnight.",
-  TEXT_TOO_SHORT: "Please enter at least 50 characters.",
-  INVALID_MODE: "Invalid mode selected.",
-  default: "Something went wrong. Please try again.",
-};
-
 export default function GeneratePage() {
   const [inputText, setInputText] = useState("");
   const [mode, setMode] = useState<Mode>("MCQ");
   const [language, setLanguage] = useState("en");
-
   const [isLoading, setIsLoading] = useState(false);
   const [streamedText, setStreamedText] = useState("");
   const [error, setError] = useState<string | null>(null);
-
   const [result, setResult] = useState<
     MCQResult | FlashcardsResult | SummaryResult | null
   >(null);
   const [resultMode, setResultMode] = useState<Mode | null>(null);
+
+  // ── CHANGEMENT 2 : nouveaux états pour les modals ────────────────────────
+  const [showNoCreditsModal, setShowNoCreditsModal] = useState(false);
+  const [rateLimitInfo, setRateLimitInfo] = useState<{
+    retryAfter: number;
+  } | null>(null);
 
   const charCount = inputText.length;
   const isReady = charCount >= 50 && !isLoading;
@@ -117,6 +117,8 @@ export default function GeneratePage() {
     setResult(null);
     setResultMode(null);
     setError(null);
+    // ── CHANGEMENT 3 : reset du rate limit info au début ─────────────────
+    setRateLimitInfo(null);
 
     try {
       const response = await fetch("/api/generate", {
@@ -127,12 +129,32 @@ export default function GeneratePage() {
 
       if (!response.ok) {
         const data = await response.json();
+
+        // ── CHANGEMENT 4 : gestion spécifique NO_CREDITS et RATE_LIMITED ──
+        if (data.error === "NO_CREDITS") {
+          setShowNoCreditsModal(true);
+          setIsLoading(false);
+          return;
+        }
+
+        if (data.error === "RATE_LIMITED") {
+          setRateLimitInfo({ retryAfter: data.retryAfter });
+          setIsLoading(false);
+          return;
+        }
+
+        // Autres erreurs
+        const errorMessages: Record<string, string> = {
+          UNAUTHORIZED: "You must be logged in to generate content.",
+          TEXT_TOO_SHORT: "Please enter at least 50 characters.",
+          INVALID_MODE: "Invalid mode selected.",
+          default: "Something went wrong. Please try again.",
+        };
         setError(errorMessages[data.error] ?? errorMessages.default);
         setIsLoading(false);
         return;
       }
 
-      // ── Lecture du stream ───────────────────────────────────────────────────
       const reader = response.body?.getReader();
       const decoder = new TextDecoder();
 
@@ -151,7 +173,7 @@ export default function GeneratePage() {
         const chunk = decoder.decode(value);
 
         if (chunk.startsWith("ERROR:")) {
-          setError(errorMessages.default);
+          setError("Something went wrong during generation.");
           setIsLoading(false);
           return;
         }
@@ -160,7 +182,6 @@ export default function GeneratePage() {
         setStreamedText(fullText);
       }
 
-      // ── Parse le résultat ───────────────────────────────────────────────────
       const parsed = parseGenerationResult(fullText, mode);
 
       if (parsed) {
@@ -172,7 +193,7 @@ export default function GeneratePage() {
       }
     } catch (err) {
       console.error(err);
-      setError(errorMessages.default);
+      setError("Network error. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -183,11 +204,19 @@ export default function GeneratePage() {
     setResultMode(null);
     setStreamedText("");
     setError(null);
+    // ── CHANGEMENT 5 : reset du rate limit info ───────────────────────────
+    setRateLimitInfo(null);
     setInputText("");
   }
 
   return (
     <div className="max-w-2xl space-y-6">
+      {/* ── CHANGEMENT 6 : Modal No Credits ────────────────────────────────── */}
+      <NoCreditsModal
+        isOpen={showNoCreditsModal}
+        onClose={() => setShowNoCreditsModal(false)}
+      />
+
       {/* ── HEADER ─────────────────────────────── */}
       <div>
         <h1 className="text-2xl font-bold text-slate-900">Generate</h1>
@@ -195,6 +224,14 @@ export default function GeneratePage() {
           Paste your content and choose a mode
         </p>
       </div>
+
+      {/* ── CHANGEMENT 7 : Banner Rate Limit ───────────────────────────────── */}
+      {rateLimitInfo && (
+        <RateLimitBanner
+          retryAfter={rateLimitInfo.retryAfter}
+          onDismiss={() => setRateLimitInfo(null)}
+        />
+      )}
 
       {/* ── FORM — caché si résultat ────────────── */}
       {!result && (
@@ -396,7 +433,6 @@ export default function GeneratePage() {
       {/* ── RÉSULTAT FINAL ─────────────────────── */}
       {result && resultMode && (
         <div className="space-y-4">
-          {/* Header résultat */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <CheckCircle2 className="w-5 h-5 text-emerald-500" />
@@ -421,7 +457,6 @@ export default function GeneratePage() {
             </Button>
           </div>
 
-          {/* Composant résultat selon le mode */}
           {resultMode === "MCQ" && (
             <MCQResultDisplay data={result as MCQResult} />
           )}
