@@ -14,6 +14,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ShareButton } from "@/components/dashboard/share-button";
 
 const modeConfig: Record<
   string,
@@ -198,6 +199,11 @@ export default async function HistoryPage() {
 
                 {/* Arrow on hover */}
                 <ArrowRight className="w-4 h-4 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity mt-1 shrink-0" />
+                <div className="flex items-center gap-2 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                  {gen.shareToken && (
+                    <ShareButton shareToken={gen.shareToken} />
+                  )}
+                </div>
               </div>
             );
           })}

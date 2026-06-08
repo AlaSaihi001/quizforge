@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
@@ -32,6 +32,9 @@ import {
 import { MCQResultDisplay } from "@/components/dashboard/results/mcq-result";
 import { FlashcardsResultDisplay } from "@/components/dashboard/results/flashcards-result";
 import { SummaryResultDisplay } from "@/components/dashboard/results/summary-result";
+import { ProGate } from "@/components/dashboard/pro-gate";
+import { PDFDownloadButton } from "@/components/dashboard/pdf-download-button";
+import { ShareButton } from "@/components/dashboard/share-button";
 
 // ── CHANGEMENT 1 : nouveaux imports ──────────────────────────────────────────
 import { NoCreditsModal } from "@/components/dashboard/no-credits-modal";
@@ -94,6 +97,9 @@ export default function GeneratePage() {
   const [isLoading, setIsLoading] = useState(false);
   const [streamedText, setStreamedText] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [userPlan, setUserPlan] = useState<string>("FREE");
+  const [generationToken, setGenerationToken] = useState<string | null>(null);
+
   const [result, setResult] = useState<
     MCQResult | FlashcardsResult | SummaryResult | null
   >(null);
@@ -108,6 +114,15 @@ export default function GeneratePage() {
   const charCount = inputText.length;
   const isReady = charCount >= 50 && !isLoading;
   const selectedMode = modes.find((m) => m.value === mode)!;
+
+  useEffect(() => {
+    fetch("/api/generate")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.plan) setUserPlan(data.plan);
+      })
+      .catch(() => {});
+  }, []);
 
   async function handleGenerate() {
     if (!isReady) return;
@@ -191,6 +206,19 @@ export default function GeneratePage() {
       } else {
         setError("Could not format the AI response. Raw output shown below.");
       }
+      if (parsed) {
+        setResult(parsed);
+        setResultMode(mode);
+        setStreamedText("");
+
+        // Récupère le token de la génération qu'on vient de créer
+        // en lisant la dernière génération de l'user
+        try {
+          const res = await fetch("/api/generations/latest");
+          const data = await res.json();
+          if (data.shareToken) setGenerationToken(data.shareToken);
+        } catch {}
+      }
     } catch (err) {
       console.error(err);
       setError("Network error. Please try again.");
@@ -207,6 +235,7 @@ export default function GeneratePage() {
     // ── CHANGEMENT 5 : reset du rate limit info ───────────────────────────
     setRateLimitInfo(null);
     setInputText("");
+    setGenerationToken(null);
   }
 
   return (
@@ -217,14 +246,66 @@ export default function GeneratePage() {
         onClose={() => setShowNoCreditsModal(false)}
       />
 
-      {/* ── HEADER ─────────────────────────────── */}
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900">Generate</h1>
-        <p className="text-slate-500 text-sm mt-1">
-          Paste your content and choose a mode
-        </p>
-      </div>
+      {/* ── RÉSULTAT FINAL ─────────────────────── */}
+      {result && resultMode && (
+        <div className="space-y-4">
+          {/* Header résultat */}
+          <div className="flex items-center justify-between flex-wrap gap-3">
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+              <span className="font-semibold text-slate-900">
+                Generation complete
+              </span>
+              <Badge
+                variant="outline"
+                className="text-xs border-emerald-200 text-emerald-700 bg-emerald-50"
+              >
+                {resultMode}
+              </Badge>
+            </div>
 
+            <div className="flex items-center gap-2">
+              {/* Share button */}
+              {generationToken && <ShareButton shareToken={generationToken} />}
+
+              {/* Bouton PDF — gated pour PRO */}
+              {/* PDF Export — gated PRO */}
+              <ProGate
+                isPro={userPlan === "PRO"}
+                featureName="PDF Export"
+                description="Download your results as a formatted PDF"
+              >
+                <PDFDownloadButton
+                  data={result}
+                  mode={resultMode}
+                  title="QuizForge Generation"
+                />
+              </ProGate>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={reset}
+                className="text-xs"
+              >
+                <RefreshCcw className="w-3.5 h-3.5 mr-1.5" />
+                New generation
+              </Button>
+            </div>
+          </div>
+
+          {/* Composant résultat selon le mode */}
+          {resultMode === "MCQ" && (
+            <MCQResultDisplay data={result as MCQResult} />
+          )}
+          {resultMode === "FLASHCARDS" && (
+            <FlashcardsResultDisplay data={result as FlashcardsResult} />
+          )}
+          {resultMode === "SUMMARY" && (
+            <SummaryResultDisplay data={result as SummaryResult} />
+          )}
+        </div>
+      )}
       {/* ── CHANGEMENT 7 : Banner Rate Limit ───────────────────────────────── */}
       {rateLimitInfo && (
         <RateLimitBanner
@@ -431,43 +512,7 @@ export default function GeneratePage() {
       )}
 
       {/* ── RÉSULTAT FINAL ─────────────────────── */}
-      {result && resultMode && (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="w-5 h-5 text-emerald-500" />
-              <span className="font-semibold text-slate-900">
-                Generation complete
-              </span>
-              <Badge
-                variant="outline"
-                className="text-xs border-emerald-200 text-emerald-700 bg-emerald-50"
-              >
-                {resultMode}
-              </Badge>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={reset}
-              className="text-xs"
-            >
-              <RefreshCcw className="w-3.5 h-3.5 mr-1.5" />
-              New generation
-            </Button>
-          </div>
-
-          {resultMode === "MCQ" && (
-            <MCQResultDisplay data={result as MCQResult} />
-          )}
-          {resultMode === "FLASHCARDS" && (
-            <FlashcardsResultDisplay data={result as FlashcardsResult} />
-          )}
-          {resultMode === "SUMMARY" && (
-            <SummaryResultDisplay data={result as SummaryResult} />
-          )}
-        </div>
-      )}
+      
     </div>
   );
 }
