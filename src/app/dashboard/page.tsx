@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { UpgradeBanner } from "@/components/dashboard/upgrade-banner";
 import { ManageSubscriptionButton } from "@/components/dashboard/manage-subscription-button";
+import type { Metadata } from "next";
 
 import {
   Sparkles,
@@ -19,6 +20,12 @@ import {
   Crown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+export const metadata: Metadata = {
+  title: "Dashboard",
+  description: "View your AI-generated quizzes and study materials.",
+  robots: { index: false, follow: false }, // pas d'indexation pour les pages privées
+};
 
 const modeConfig: Record<
   string,
@@ -90,7 +97,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* ── STATS ──────────────────────────────── */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
         {/* Credits */}
         <div className="bg-white rounded-2xl border border-slate-200 p-5 hover:border-violet-200 transition-colors">
           <div className="flex items-start justify-between mb-4">
@@ -211,22 +218,51 @@ export default async function DashboardPage() {
         </div>
 
         {user.generations.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-dashed border-slate-300 flex flex-col items-center justify-center py-14">
-            <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center mb-3">
-              <Sparkles className="w-6 h-6 text-slate-400" />
+          <div className="bg-white rounded-2xl border-2 border-dashed border-slate-200 p-12 text-center">
+            {/* Illustration */}
+            <div className="flex items-center justify-center gap-3 mb-6">
+              {[BookOpen, Brain, FileText].map((Icon, i) => (
+                <div
+                  key={i}
+                  className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                    i === 0
+                      ? "bg-blue-100"
+                      : i === 1
+                        ? "bg-violet-100"
+                        : "bg-emerald-100"
+                  }`}
+                >
+                  <Icon
+                    className={`w-6 h-6 ${
+                      i === 0
+                        ? "text-blue-500"
+                        : i === 1
+                          ? "text-violet-500"
+                          : "text-emerald-500"
+                    }`}
+                  />
+                </div>
+              ))}
             </div>
-            <p className="text-slate-600 font-medium">No generations yet</p>
-            <p className="text-slate-400 text-sm mt-1 mb-5">
-              Create your first quiz to get started
+
+            <h3 className="text-lg font-semibold text-slate-900 mb-2">
+              Create your first quiz
+            </h3>
+            <p className="text-slate-400 text-sm max-w-sm mx-auto mb-6 leading-relaxed">
+              Paste your course content and get MCQ quizzes, flashcards, or
+              summaries in seconds.
             </p>
+
             <Link href="/dashboard/generate">
-              <Button
-                size="sm"
-                className="bg-violet-600 hover:bg-violet-700 text-white"
-              >
-                Generate now
+              <Button className="bg-violet-600 hover:bg-violet-700 text-white">
+                <Sparkles className="w-4 h-4 mr-2" />
+                Generate your first quiz
               </Button>
             </Link>
+
+            <p className="text-slate-400 text-xs mt-4">
+              You have {creditsLeft} free credits available today
+            </p>
           </div>
         ) : (
           <div className="bg-white rounded-2xl border border-slate-200 divide-y divide-slate-100 overflow-hidden">

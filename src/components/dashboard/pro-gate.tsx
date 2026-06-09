@@ -30,25 +30,16 @@ export function ProGate({
       </div>
 
       {/* Overlay PRO */}
-      <div className="absolute inset-0 flex items-center justify-center bg-white/80 backdrop-blur-sm rounded-2xl border border-amber-200">
-        <div className="text-center p-6 max-w-sm">
-          {/* Icône lock */}
-          <div className="w-14 h-14 rounded-2xl bg-amber-100 flex items-center justify-center mx-auto mb-4">
-            <Lock className="w-7 h-7 text-amber-600" />
-          </div>
-
+      <div className="absolute inset-0 flex items-center justify-center bg-white/80 backdrop-blur-sm rounded-2xl border border-amber-200   ">
+        <div className="text-center p-4 max-w-sm">
           {/* Titre */}
-          <div className="flex items-center justify-center gap-2 mb-2">
-            <Crown className="w-4 h-4 text-amber-500" />
-            <span className="font-bold text-slate-900 text-sm">
-              PRO Feature
-            </span>
+          <div className="flex items-center justify-center gap-2">
+            <Lock className="w-3 h-3 text-amber-500" />
+            <span className="font-bold text-slate-900 text-sm">PDF</span>
           </div>
 
           <p className="font-semibold text-slate-800 mb-1">{featureName}</p>
           <p className="text-slate-500 text-sm mb-5">{description}</p>
-
-          <UpgradeButton size="sm" />
         </div>
       </div>
     </div>

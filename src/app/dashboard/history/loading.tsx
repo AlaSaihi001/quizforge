@@ -14,10 +14,10 @@ export default function HistoryLoading() {
 
       {/* Filter chips */}
       <div className="flex gap-2">
-        {[60, 80, 100, 90].map((w, i) => (
+        {[70, 90, 110, 100].map((w, i) => (
           <Skeleton
             key={i}
-            className={`h-7 rounded-full bg-slate-200`}
+            className="h-7 rounded-full bg-slate-200"
             style={{ width: w }}
           />
         ))}
@@ -25,16 +25,16 @@ export default function HistoryLoading() {
 
       {/* List */}
       <div className="bg-white rounded-2xl border border-slate-200 divide-y divide-slate-100 overflow-hidden">
-        {[1, 2, 3, 4, 5, 6].map((i) => (
+        {[1, 2, 3, 4, 5, 6, 7].map((i) => (
           <div key={i} className="flex items-start gap-4 px-5 py-4">
             <Skeleton className="w-9 h-9 rounded-xl bg-slate-200 shrink-0" />
             <div className="flex-1 space-y-2">
               <div className="flex items-center gap-2">
                 <Skeleton className="h-5 w-20 rounded-full bg-slate-200" />
-                <Skeleton className="h-4 w-24 bg-slate-200" />
+                <Skeleton className="h-4 w-28 bg-slate-200" />
               </div>
-              <Skeleton className="h-4 w-full bg-slate-200" />
-              <Skeleton className="h-4 w-3/4 bg-slate-200" />
+              <Skeleton className="h-3 w-full bg-slate-200" />
+              <Skeleton className="h-3 w-3/4 bg-slate-200" />
             </div>
           </div>
         ))}

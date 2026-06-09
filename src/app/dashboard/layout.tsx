@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { Sidebar } from "./sidebar";
 import { PaymentToastWrapper } from "@/components/dashboard/payment-toast-wrapper";
+import { OnboardingWrapper } from "@/components/dashboard/onboarding-wrapper";
 
 export default async function DashboardLayout({
   children,
@@ -58,6 +59,7 @@ export default async function DashboardLayout({
         <main className="flex-1 overflow-y-auto p-8">{children}</main>
       </div>
       <PaymentToastWrapper />
+      <OnboardingWrapper />
     </div>
   );
 }

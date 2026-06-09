@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ShareButton } from "@/components/dashboard/share-button";
+import type { Metadata } from "next";
 
 const modeConfig: Record<
   string,
@@ -49,6 +50,11 @@ const modeConfig: Record<
   },
 };
 
+export const metadata: Metadata = {
+  title: "History",
+  description: "View all your generated study materials.",
+  robots: { index: false, follow: false },
+};
 export default async function HistoryPage() {
   const session = await getServerSession(authOptions);
   if (!session?.user?.email) redirect("/login");
@@ -100,7 +106,7 @@ export default async function HistoryPage() {
       </div>
 
       {/* ── FILTER CHIPS ───────────────────────── */}
-      <div className="flex gap-2 flex-wrap">
+      <div className="flex gap-2 flex-wrap overflow-x-auto pb-1 scrollbar-none">
         <div className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-900 text-white rounded-full text-xs font-medium cursor-pointer">
           All
           <span className="bg-white/20 px-1.5 py-0.5 rounded-full text-xs">
