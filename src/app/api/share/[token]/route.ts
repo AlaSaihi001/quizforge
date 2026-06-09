@@ -3,12 +3,15 @@ import { prisma } from "@/lib/prisma"
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { token: string } }
+  context: { params: Promise<{ token: string }> }
 ) {
-  const { token } = params
+  const { token } = await context.params
 
   if (!token) {
-    return NextResponse.json({ error: "NO_TOKEN" }, { status: 400 })
+    return NextResponse.json(
+      { error: "NO_TOKEN" },
+      { status: 400 }
+    )
   }
 
   try {
@@ -20,7 +23,6 @@ export async function GET(
         mode: true,
         language: true,
         createdAt: true,
-        // On ne retourne PAS : userId, inputText (privacy)
       },
     })
 
@@ -33,9 +35,9 @@ export async function GET(
 
     return NextResponse.json(generation)
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (error: any) {
+  } catch (error) {
     console.error("Share API error:", error)
+
     return NextResponse.json(
       { error: "SERVER_ERROR" },
       { status: 500 }
