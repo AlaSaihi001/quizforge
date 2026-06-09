@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import { Providers } from "@/components/providers";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -79,6 +80,7 @@ export default function RootLayout({
       <body className={`${inter.className} antialiased bg-slate-50`}>
         <Providers>{children}</Providers>
         <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
