@@ -134,35 +134,6 @@ Open [http://localhost:3000](http://localhost:3000)
 
 ---
 
-## 📁 Project Structure
-
-```
-src/
-├── app/
-│   ├── (auth)/          # Login & Register pages
-│   ├── api/             # API routes (generate, stripe, cron)
-│   ├── dashboard/       # Protected dashboard pages
-│   └── share/           # Public share pages
-├── components/
-│   ├── dashboard/       # Dashboard components
-│   ├── landing/         # Landing page sections
-│   ├── pdf/             # PDF templates
-│   └── ui/              # shadcn/ui components
-└── lib/
-    ├── actions/         # Server Actions
-    ├── db/              # Database queries
-    ├── parsers.ts       # AI response parsers
-    ├── prompts.ts       # AI prompt templates
-    ├── prisma.ts        # Prisma client singleton
-    ├── rate-limit.ts    # Rate limiter
-    └── stripe.ts        # Stripe client
-prisma/
-├── schema.prisma        # Database schema
-└── seed.ts              # Seed data
-```
-
----
-
 ## 🔑 Key Implementation Details
 
 ### Streaming AI Responses
@@ -188,10 +159,4 @@ The app is deployed on **Vercel** with:
 
 ---
 
-## 📄 License
-
-MIT — feel free to use this project as a reference for your own learning.
-
----
-
-Built by **Ala Eddine Saihi** · [LinkedIn](https://linkedin.com/in/YOUR_PROFILE)
+Built by **Ala Eddine Saihi** · [LinkedIn](https://linkedin.com/in/saihi-ala-eddine)
