@@ -1,36 +1,197 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ⚡ QuizForge AI — AI-Powered Exam Prep Generator
 
-## Getting Started
+> Turn your course content into MCQ quizzes, flashcards, and summaries in seconds using AI.
 
-First, run the development server:
+![Next.js](https://img.shields.io/badge/Next.js-14-black?style=flat-square&logo=next.js)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?style=flat-square&logo=typescript)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-336791?style=flat-square&logo=postgresql)
+![Prisma](https://img.shields.io/badge/Prisma-5-2D3748?style=flat-square&logo=prisma)
+![Stripe](https://img.shields.io/badge/Stripe-payments-635BFF?style=flat-square&logo=stripe)
+![Groq](https://img.shields.io/badge/Groq-Llama_3.3-orange?style=flat-square)
+
+---
+
+## 📌 Overview
+
+QuizForge AI is a full-stack SaaS application that allows students to paste any course content and instantly generate:
+
+- 📝 **MCQ Quizzes** — 10 multiple choice questions with answers and explanations
+- 🃏 **Flashcards** — Q&A pairs for active recall and spaced repetition
+- 📋 **Summaries** — Structured key points and important terms
+
+Built as a portfolio project to demonstrate production-level full-stack development skills.
+
+**Live demo:** [quizforge-ai.vercel.app](https://quizforge-ai.vercel.app)
+
+---
+
+## ✨ Features
+
+- 🔐 **Authentication** — Email/password with NextAuth.js v4
+- 🤖 **AI Generation** — Streaming responses via Groq (Llama 3.3 70B)
+- 💳 **Stripe Payments** — Subscription billing with webhook handling
+- 🎯 **Credit System** — 10 free generations/day with daily cron reset
+- 🚦 **Rate Limiting** — Redis-based rate limiter (5 req/min) via Upstash
+- 📄 **PDF Export** — Download formatted PDFs (PRO feature)
+- 🔗 **Share Links** — Public shareable URLs for each generation
+- 🌍 **Multi-language** — English, French, Arabic support
+- 📱 **Responsive** — Mobile-first design with Tailwind CSS + shadcn/ui
+
+---
+
+## 🛠 Tech Stack
+
+| Layer | Technology |
+|---|---|
+| **Frontend** | Next.js 14 (App Router), TypeScript, Tailwind CSS, shadcn/ui |
+| **Backend** | Next.js Server Actions, API Routes |
+| **Database** | PostgreSQL (Neon), Prisma ORM v5 |
+| **AI** | Groq SDK — Llama 3.3 70B Versatile |
+| **Auth** | NextAuth.js v4 — Credentials Provider |
+| **Payments** | Stripe Checkout + Webhooks |
+| **Cache / Rate Limit** | Upstash Redis |
+| **Monitoring** | Sentry |
+| **Deployment** | Vercel + Neon + Upstash |
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Node.js 20+
+- PostgreSQL (local or Neon)
+- npm
+
+### Installation
+
+**1. Clone the repository**
+
+```bash
+git clone https://github.com/YOUR_USERNAME/quizforge.git
+cd quizforge
+```
+
+**2. Install dependencies**
+
+```bash
+npm install
+```
+
+**3. Set up environment variables**
+
+```bash
+cp .env.example .env
+```
+
+Fill in your `.env` file:
+
+```env
+# Database
+DATABASE_URL="postgresql://user:password@localhost:5432/quizforge?schema=public"
+
+# Auth
+NEXTAUTH_SECRET="your-secret-here"
+NEXTAUTH_URL="http://localhost:3000"
+
+# AI (free at console.groq.com)
+GROQ_API_KEY="gsk_..."
+
+# Redis (free at upstash.com)
+UPSTASH_REDIS_REST_URL="https://..."
+UPSTASH_REDIS_REST_TOKEN="..."
+
+# Stripe (test mode keys from dashboard.stripe.com)
+STRIPE_SECRET_KEY="sk_test_..."
+STRIPE_PUBLISHABLE_KEY="pk_test_..."
+STRIPE_WEBHOOK_SECRET="whsec_..."
+STRIPE_PRICE_ID="price_..."
+
+# Cron security
+CRON_SECRET="any-random-string"
+```
+
+**4. Set up the database**
+
+```bash
+npx prisma migrate dev
+npx prisma generate
+```
+
+**5. Seed the database (optional)**
+
+```bash
+npx prisma db seed
+```
+
+**6. Run the development server**
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 📁 Project Structure
 
-## Learn More
+```
+src/
+├── app/
+│   ├── (auth)/          # Login & Register pages
+│   ├── api/             # API routes (generate, stripe, cron)
+│   ├── dashboard/       # Protected dashboard pages
+│   └── share/           # Public share pages
+├── components/
+│   ├── dashboard/       # Dashboard components
+│   ├── landing/         # Landing page sections
+│   ├── pdf/             # PDF templates
+│   └── ui/              # shadcn/ui components
+└── lib/
+    ├── actions/         # Server Actions
+    ├── db/              # Database queries
+    ├── parsers.ts       # AI response parsers
+    ├── prompts.ts       # AI prompt templates
+    ├── prisma.ts        # Prisma client singleton
+    ├── rate-limit.ts    # Rate limiter
+    └── stripe.ts        # Stripe client
+prisma/
+├── schema.prisma        # Database schema
+└── seed.ts              # Seed data
+```
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🔑 Key Implementation Details
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Streaming AI Responses
+Groq responses stream token by token using `ReadableStream` and the Web Streams API — the same pattern used by ChatGPT.
 
-## Deploy on Vercel
+### Credit System
+Each generation atomically decrements credits using a `prisma.$transaction` — if the generation fails, credits are not consumed.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Stripe Webhooks
+Payment events are verified using HMAC signatures and handled idempotently — the same event can be received multiple times safely.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Rate Limiting
+Upstash Redis sliding window algorithm prevents abuse — max 5 requests per 60 seconds per user, checked before any DB query.
+
+---
+
+## 🌐 Deployment
+
+The app is deployed on **Vercel** with:
+- **Neon** for PostgreSQL database
+- **Upstash** for Redis rate limiting
+- **Vercel Cron** for daily credit reset at midnight
+
+---
+
+## 📄 License
+
+MIT — feel free to use this project as a reference for your own learning.
+
+---
+
+Built by **Ala Eddine Saihi** · [LinkedIn](https://linkedin.com/in/YOUR_PROFILE)
