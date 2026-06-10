@@ -21,7 +21,7 @@ QuizForge AI is a full-stack SaaS application that allows students to paste any 
 
 Built as a portfolio project to demonstrate production-level full-stack development skills.
 
-**Live demo:** [quizforge-ai.vercel.app](https://quizforge-ai.vercel.app)
+**Live demo:** [quizforge-neon.vercel.app](https://quizforge-neon.vercel.app)
 
 ---
 
